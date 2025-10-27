@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -19,6 +20,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk wget python3-pip
+          git --version
           pip install --upgrade pip
           pip install buildozer cython
 
@@ -38,16 +40,8 @@ jobs:
 
           export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
 
-          echo "Checking sdkmanager path..."
-          ls "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/"
-
           yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses || true
           "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-
-      - name: Ensure Git Installed
-        run: |
-          sudo apt update
-          sudo apt install -y git
 
       - name: Build APK
         env:

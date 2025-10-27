@@ -11,16 +11,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install core dependencies
+      - name: Install core dependencies (Python + Git + Java)
         run: |
           sudo apt update
           sudo apt install -y git zip unzip openjdk-17-jdk python3-pip wget
+          echo "Git path:"
+          which git
+          echo "Git version:"
           git --version
-          python3 --version
           pip install --upgrade pip
           pip install cython buildozer
 
-      - name: Set up Android SDK
+      - name: Install Android SDK
         run: |
           export ANDROID_SDK_ROOT=$HOME/android-sdk
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
@@ -33,13 +35,16 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
-      - name: Build APK
+      - name: Build APK with Buildozer
         env:
           ANDROID_HOME: ${{ runner.home }}/android-sdk
           ANDROID_SDK_ROOT: ${{ runner.home }}/android-sdk
-          PATH: ${{ runner.home }}/android-sdk/cmdline-tools/latest/bin:${{ runner.home }}/android-sdk/platform-tools:${{ env.PATH }}
+          PATH: /usr/bin:${{ runner.home }}/android-sdk/cmdline-tools/latest/bin:${{ runner.home }}/android-sdk/platform-tools:${{ env.PATH }}
         run: |
-          git --version
+          echo "Checking Git before build..."
+          which git || echo "Git missing"
+          git --version || true
+          echo "Starting Buildozer..."
           buildozer android debug
 
       - name: Upload APK artifact

@@ -1,27 +1,27 @@
-name: Build APK
+[app]
+# (str) Title of your application
+title = NBA Predictor
 
-on:
-  workflow_dispatch:
+# (str) Package name
+package.name = nba_predictor
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-      - name: Install build tools
-        run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk
-          pip install buildozer cython
-      - name: Build APK
-        run: |
-          buildozer android debug
-      - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: nba-predictor-apk
-          path: bin/*.apk
+# (str) Package domain (reverse domain notation)
+package.domain = org.example
+
+# (str) Source dir
+source.dir = .
+
+# (str) Application versioning (MUST be included)
+version = 1.0.0
+
+# (list) Application requirements
+requirements = python3,kivy,numpy,pypdf,plyer
+
+# (str) Entry point (main.py)
+entrypoint = main.py
+
+# (list) Permissions
+android.permissions = READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+
+# (str) Presplash image (optional)
+# presplash.filename = %(source.dir)s/data/presplash.png

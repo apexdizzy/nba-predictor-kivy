@@ -18,13 +18,27 @@ jobs:
       - name: Install dependencies and Android SDK
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip
+          sudo apt install -y git zip unzip openjdk-17-jdk wget python3-pip
           pip install buildozer cython
-          mkdir -p ~/.android && echo 'count=0' > ~/.android/repositories.cfg
+
+          # Install Android command-line tools
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+          unzip cmdtools.zip -d latest
+          rm cmdtools.zip
+
+          # Set environment paths
+          export ANDROID_HOME=$HOME/android-sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+
           yes | sdkmanager --licenses || true
           yes | sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: Build APK
+        env:
+          ANDROID_HOME: ${{ runner.home }}/android-sdk
+          PATH: ${{ runner.home }}/android-sdk/cmdline-tools/latest/bin:${{ runner.home }}/android-sdk/platform-tools:${{ env.PATH }}
         run: |
           buildozer android debug
 

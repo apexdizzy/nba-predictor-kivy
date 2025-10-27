@@ -11,37 +11,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
-      - name: Install dependencies and Android SDK
+      - name: Install core dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk wget python3-pip
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip wget
           git --version
+          python3 --version
           pip install --upgrade pip
-          pip install buildozer cython
+          pip install cython buildozer
 
-          export ANDROID_SDK_ROOT="$HOME/android-sdk"
-          mkdir -p "$ANDROID_SDK_ROOT"
-
-          cd "$HOME"
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
-          unzip -q cmdline-tools.zip -d "$ANDROID_SDK_ROOT/"
-          rm cmdline-tools.zip
-
-          if [ -d "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" ]; then
-            mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          else
-            mv "$ANDROID_SDK_ROOT/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          fi
-
-          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH"
-
-          yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses || true
-          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+      - name: Set up Android SDK
+        run: |
+          export ANDROID_SDK_ROOT=$HOME/android-sdk
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          cd $ANDROID_SDK_ROOT/cmdline-tools
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O tools.zip
+          unzip -q tools.zip
+          rm tools.zip
+          mv cmdline-tools latest
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
+          yes | sdkmanager --licenses
+          sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
       - name: Build APK
         env:
@@ -51,7 +41,6 @@ jobs:
         run: |
           git --version
           buildozer android debug
-        shell: bash
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
